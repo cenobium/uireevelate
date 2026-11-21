@@ -125,6 +125,27 @@ function kyri.reload_icons()
     return kyri.icons
 end
 
+
+local function harden_gui(gui)
+    if not gui then return end
+    pcall(function()
+        if syn and syn.protect_gui then
+            syn.protect_gui(gui)
+        elseif protectgui then
+            protectgui(gui)
+        elseif protect_gui then
+            protect_gui(gui)
+        elseif get_hidden_gui then
+            gui.Parent = get_hidden_gui()
+        end
+    end)
+    pcall(function()
+        if gethui and gui.Parent ~= gethui() then
+            gui.Parent = gethui()
+        end
+    end)
+end
+
 local function rnd(n)
     local c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     local s = ""
@@ -159,7 +180,8 @@ function kyri.toast(msg)
         DisplayOrder = 999999999,
         Parent = gethui and gethui() or lp:FindFirstChildOfClass("PlayerGui")
     })
-    gui:SetAttribute("kyri", true)
+    gui:SetAttribute("lui", true)
+    harden_gui(gui)
 
     local pill = make("Frame", {
         AutomaticSize = Enum.AutomaticSize.X,
@@ -223,7 +245,8 @@ function kyri.copybox(text, title)
         DisplayOrder = 999999999,
         Parent = lp:FindFirstChildOfClass("PlayerGui")
     })
-    gui:SetAttribute("kyri", true)
+    gui:SetAttribute("lui", true)
+    harden_gui(gui)
 
     local t = kyri.theme
 
@@ -596,7 +619,8 @@ function kyri.island(opts)
         DisplayOrder = 999999997,
         Parent = lp.PlayerGui
     })
-    gui:SetAttribute("kyri", true)
+    gui:SetAttribute("lui", true)
+    harden_gui(gui)
     mine[gui] = true
     if getgenv then table.insert(getgenv().__kyri_islands, gui) end
     isl.gui = gui
@@ -2910,7 +2934,8 @@ function kyri.spotify(opts)
             Enabled = false,
             Parent = gethui and gethui() or lp:WaitForChild("PlayerGui")
         })
-        gui:SetAttribute("kyri", true)
+        gui:SetAttribute("lui", true)
+    harden_gui(gui)
 
         local shade = make("TextButton", {
             Size = UDim2.fromScale(1, 1),
@@ -4725,7 +4750,8 @@ function kyri.spotify(opts)
             Enabled = false,
             Parent = gethui and gethui() or lp:WaitForChild("PlayerGui")
         })
-        gui:SetAttribute("kyri", true)
+        gui:SetAttribute("lui", true)
+    harden_gui(gui)
 
         local shell = make("Frame", {
             Size = UDim2.fromScale(1, 1),
@@ -7034,7 +7060,8 @@ function kyri.splash(options)
         DisplayOrder = 999999999,
         Parent = localPlayer.PlayerGui
     })
-    load_gui:SetAttribute("kyri", true)
+    load_gui:SetAttribute("lui", true)
+    harden_gui(gui)
 
     local logo = make("ImageLabel", {
         Size = UDim2.fromOffset(300, 300),
@@ -7142,7 +7169,7 @@ function kyri.new(title, options)
     local localPlayer = kyri.svc.plr.LocalPlayer
 
     for i,g in pairs(localPlayer.PlayerGui:GetChildren()) do
-        if g:IsA("ScreenGui") and g:GetAttribute("kyri") then g:Destroy() end
+        if g:IsA("ScreenGui") and g:GetAttribute("lui") then g:Destroy() end
     end
 
     kyri.splash(options)
@@ -7955,7 +7982,8 @@ function kyri.new(title, options)
         if isfile and isfile(POS_FILE) then pcall(function() delfile(POS_FILE) end) end
     end
 
-    w.gui:SetAttribute("kyri", true)
+    w.gui:SetAttribute("lui", true)
+    harden_gui(w.gui)
     w.gui.Parent = localPlayer.PlayerGui
     w.localPlayer = localPlayer
 
@@ -8434,6 +8462,50 @@ function kyri.new(title, options)
                 if new_title then title_lbl.Text = new_title end
                 if new_body then body_lbl.Text = new_body end
             end
+            return api
+        end
+
+
+        function tab:notes(title, body)
+            return tab:paragraph(title or "notes", body or "")
+        end
+
+        function tab:code(src, height)
+            height = height or 140
+            local box = make("Frame", {
+                Size = UDim2.new(1, 0, 0, height),
+                BackgroundColor3 = t.bg,
+                BorderSizePixel = 0,
+                ClipsDescendants = true,
+                Parent = page
+            })
+            make("UICorner", {CornerRadius = UDim.new(0, 8), Parent = box})
+            make("UIStroke", {Color = t.border, Thickness = 1, Parent = box})
+            local tb = make("TextBox", {
+                Size = UDim2.new(1, -16, 1, -16),
+                Position = UDim2.fromOffset(8, 8),
+                BackgroundTransparency = 1,
+                Text = tostring(src or ""),
+                TextColor3 = t.text,
+                PlaceholderText = "",
+                Font = Enum.Font.Code,
+                TextSize = 12,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Top,
+                TextWrapped = false,
+                ClearTextOnFocus = false,
+                MultiLine = true,
+                TextEditable = true,
+                Parent = box
+            })
+            local api = {box = box, input = tb}
+            function api:set(new_src)
+                tb.Text = tostring(new_src or "")
+            end
+            function api:get()
+                return tb.Text
+            end
+            table.insert(tab.elements, api)
             return api
         end
 
@@ -10097,7 +10169,8 @@ function kyri.new(title, options)
                 DisplayOrder = 999999998,
                 Parent = w.localPlayer.PlayerGui
             })
-            gui:SetAttribute("kyri", true)
+            gui:SetAttribute("lui", true)
+    harden_gui(gui)
             w.notif_gui = gui
 
             local vpx = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize.X or 1280
@@ -10376,6 +10449,31 @@ function kyri.new(title, options)
 
     if getgenv then getgenv().__kyri_inst = w end
     return w
+end
+
+
+function kyri.escape()
+    if getgenv and getgenv().__kyri_inst then
+        pcall(function() getgenv().__kyri_inst:destroy() end)
+        getgenv().__kyri_inst = nil
+    end
+    -- wipe leftover guis marked by us
+    local lp = kyri.svc.plr.LocalPlayer
+    local roots = {}
+    pcall(function()
+        if gethui then table.insert(roots, gethui()) end
+    end)
+    pcall(function()
+        local pg = lp and lp:FindFirstChildOfClass("PlayerGui")
+        if pg then table.insert(roots, pg) end
+    end)
+    for _, root in ipairs(roots) do
+        for _, ch in ipairs(root:GetChildren()) do
+            if ch:IsA("ScreenGui") and ch:GetAttribute("lui") then
+                pcall(function() ch:Destroy() end)
+            end
+        end
+    end
 end
 
 return kyri
