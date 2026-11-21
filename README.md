@@ -1,42 +1,63 @@
-# LocalUI
+# uireevelate
 
-Client-side interface helper for Roblox executors (Delta and others).
+Full KyriLib body hosted here as a single `source.lua`.
 
-Looks and behaves like a normal local UI module. No external asset fetches, no network calls for icons/logos, no remotes, no FireServer / InvokeServer.
-
-## Load
+## Load (Delta)
 
 ```lua
-local localui = loadstring(game:HttpGet("https://raw.githubusercontent.com/cenobium/uireevelate/refs/heads/main/source.lua"))()
+local kyri = loadstring(game:HttpGet("https://raw.githubusercontent.com/cenobium/uireevelate/refs/heads/main/source.lua"))()
 ```
 
 ## Quick
 
 ```lua
-local localui = loadstring(game:HttpGet("https://raw.githubusercontent.com/cenobium/uireevelate/refs/heads/main/source.lua"))()
+local kyri = loadstring(game:HttpGet("https://raw.githubusercontent.com/cenobium/uireevelate/refs/heads/main/source.lua"))()
 
-local w = localui.new("Settings", {
+local w = kyri.new("Settings", {
     GameName = "GameData",
-    AutoLoad = "default"
+    AutoLoad = "default",
+    Splash = false
 })
 
-local main = w:tab("General", "settings-2")
+local main = w:tab("Main", "settings-2")
 
-main:toggle("Option", false, function(state)
+main:toggle("option", false, function(state)
 end, "opt")
 
-main:slider("Value", 0, 100, 16, function(v)
+main:slider("value", 0, 100, 16, function(v)
 end, "val")
+
+main:notes("info", "put plain notes here")
+
+main:code([[
+print("example")
+local x = 1
+]], 160)
+
+-- hard hide / destroy all marked guis
+-- kyri.escape()
 ```
 
-## Design
+## Notes / code section
 
-- ScreenGuis use random names per run
-- Parent prefers gethui() when present
-- Config folder: LocalData
-- Attribute marker: lui
-- Spotify integration removed (external)
-- Icon pack external fetch disabled
-- Zero outbound URLs for library assets
+```lua
+tab:notes(title, body)   -- paragraph-style notes block
+tab:code(source, height) -- monospace selectable code box (height default 140)
+```
 
-API surface matches common window / tab / element / flag / theme pattern.
+## Escape / protect
+
+- ScreenGuis use random names
+- Parent prefers `gethui()`
+- `protect_gui` / `syn.protect_gui` applied when present
+- Attribute marker is `lui` (not `kyri`)
+- `kyri.escape()` destroys the active window and any remaining `lui` ScreenGuis
+
+```lua
+kyri.escape()
+```
+
+## Repo layout
+
+- `source.lua` — full library (only file you need)
+- no `lib/` split
