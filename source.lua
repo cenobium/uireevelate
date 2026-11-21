@@ -1,7 +1,7 @@
 -- full original library body, hosted on this repo only (no external author URL)
 local base = "https://raw.githubusercontent.com/cenobium/uireevelate/refs/heads/main/lib/"
 local buf = {}
-for i = 1, 4 do
+for i = 1, 8 do
     local ok, chunk = pcall(function()
         return game:HttpGet(base .. "p" .. i .. ".lua")
     end)
